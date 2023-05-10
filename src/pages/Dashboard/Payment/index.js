@@ -4,12 +4,42 @@ import Title from '../../../components/TitlePage';
 import ModalityButton from '../../../components/Payment/ModalityButton';
 import { useState } from 'react';
 import Button from '../../../components/Form/Button';
+import useToken from '../../../hooks/useToken';
+import { creteTicket, getTypes } from '../../../services/ticketApi';
+import { toast } from 'react-toastify';
 import useEnrollment from '../../../hooks/api/useEnrollment';
 
 export default function Payment() {
   const [modality, setModality] = useState(null);
   const [hotelity, setHotelity] = useState(null);
+  const token = useToken();
+
+  const presential = { name: 'Presencial', price: 250 };
+  const online = { name: 'Online', price: 100 };
+  const withHotel = { name: 'Com Hotel', price: 350 };
+  const withoutHotel = { name: 'Sem Hotel', price: 0 };
   const { enrollment } = useEnrollment();
+
+  const sum = (modality?.price ?? 0) + (hotelity?.price ?? 0);
+
+  async function handleSubmit() {
+    try {
+      const types = await getTypes(token);
+      const { id: ticketTypeId } = types.find((type) => type.price === sum);
+
+      await creteTicket({ ticketTypeId, token });
+
+      setModality(null);
+      setHotelity(null);
+      toast('Ingresso reservado com sucesso!');
+    } catch (err) {
+      toast('Não foi possível reservar o ingresso!');
+    }
+  }
+
+  function compare(obj1, obj2) {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+  }
 
   if (!enrollment) {
     return (
@@ -27,61 +57,46 @@ export default function Payment() {
       <ModalityBox show={true}>
         <ModalityButton
           onClick={() =>
-            modality === 'presential' ? (setModality(null), setHotelity(null)) : setModality('presential')
+            compare(modality, presential) ? (setModality(null), setHotelity(null)) : setModality(presential)
           }
-          active={modality === 'presential'}
+          active={compare(modality, presential)}
         >
-          <span>Presencial</span>
-          <span>R$ 250</span>
+          <span>{presential.name}</span>
+          <span>R$ {presential.price}</span>
         </ModalityButton>
         <ModalityButton
-          onClick={() => (modality === 'online' ? setModality(null) : (setModality('online'), setHotelity(null)))}
-          active={modality === 'online'}
+          onClick={() => (compare(modality, online) ? setModality(null) : (setModality(online), setHotelity(null)))}
+          active={compare(modality, online)}
         >
-          <span>Online</span>
-          <span>R$ 100</span>
+          <span>{online.name}</span>
+          <span>R$ {online.price}</span>
         </ModalityButton>
       </ModalityBox>
-      <Subtitle show={modality === 'presential'}>Ótimo! Agora escolha sua modalidade de hospedagem</Subtitle>
-      <ModalityBox show={modality === 'presential'}>
+      <Subtitle show={compare(modality, presential)}>Ótimo! Agora escolha sua modalidade de hospedagem</Subtitle>
+      <ModalityBox show={compare(modality, presential)}>
         <ModalityButton
-          onClick={() => (hotelity === 'without' ? setHotelity(null) : setHotelity('without'))}
-          active={hotelity === 'without'}
+          onClick={() => (compare(hotelity, withoutHotel) ? setHotelity(null) : setHotelity(withoutHotel))}
+          active={compare(hotelity, withoutHotel)}
         >
-          <span>Sem Hotel</span>
-          <span>+ R$ 0</span>
+          <span>{withoutHotel.name}</span>
+          <span>+ R$ {withoutHotel.price}</span>
         </ModalityButton>
         <ModalityButton
-          onClick={() => (hotelity === 'with' ? setHotelity(null) : setHotelity('with'))}
-          active={hotelity === 'with'}
+          onClick={() => (compare(hotelity, withHotel) ? setHotelity(null) : setHotelity(withHotel))}
+          active={compare(hotelity, withHotel)}
         >
-          <span>Com Hotel</span>
-          <span>+ R$ 350</span>
+          <span>{withHotel.name}</span>
+          <span>+ R$ {withHotel.price}</span>
         </ModalityButton>
       </ModalityBox>
-      <Subtitle show={modality === 'online' || hotelity !== null}>
-        Fechado! O total ficou em <strong>R$ {calculateTicketPrice(modality, hotelity)}</strong>. Agora é só confirmar:
+      <Subtitle show={compare(modality, online) || hotelity !== null}>
+        Fechado! O total ficou em <strong>R$ {sum}</strong>. Agora é só confirmar:
       </Subtitle>
-      <Button
-        type="button"
-        onClick={() => alert('Ingresso reservado com sucesso!')}
-        show={modality === 'online' || hotelity !== null}
-      >
+      <Button type="button" onClick={handleSubmit} show={compare(modality, online) || hotelity !== null}>
         Reservar Ingresso
       </Button>
     </>
   );
-}
-
-function calculateTicketPrice(modality, hotelity) {
-  let result = 0;
-
-  if (modality === 'presential') result += 250;
-  if (modality === 'online') result += 100;
-  if (hotelity === 'with') result += 350;
-  if (hotelity === 'without') result += 0;
-
-  return result;
 }
 
 const ModalityBox = styled.div`
