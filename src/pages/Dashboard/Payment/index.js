@@ -4,10 +4,21 @@ import Title from '../../../components/TitlePage';
 import ModalityButton from '../../../components/Payment/ModalityButton';
 import { useState } from 'react';
 import Button from '../../../components/Form/Button';
+import useEnrollment from '../../../hooks/api/useEnrollment';
 
 export default function Payment() {
   const [modality, setModality] = useState(null);
   const [hotelity, setHotelity] = useState(null);
+  const { enrollment } = useEnrollment();
+
+  if (!enrollment) {
+    return (
+      <>
+        <Title>Ingresso e Pagamento</Title>
+        <CenterText>Você precisa completar sua inscrição antes de prosseguir pra escolha de ingresso</CenterText>
+      </>
+    );
+  };
 
   return (
     <>
@@ -79,4 +90,16 @@ const ModalityBox = styled.div`
   max-width: 314px;
   margin-bottom: 44px;
   display: ${(props) => (props.show === true ? 'flex' : 'none')};
+`;
+
+const CenterText = styled.div`
+  display: flex;
+  width: 440px;
+  height: 80%;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  text-align: center;
+  margin-left: 200px;
+  color: #8E8E8E;
 `;
