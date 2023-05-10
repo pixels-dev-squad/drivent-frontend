@@ -4,14 +4,14 @@ import Title from '../../../components/TitlePage';
 import ModalityButton from '../../../components/Payment/ModalityButton';
 import { useState } from 'react';
 import Button from '../../../components/Form/Button';
-
-function compare(obj1, obj2) {
-  return JSON.stringify(obj1) === JSON.stringify(obj2);
-}
+import useToken from '../../../hooks/useToken';
+import { creteTicket, getTypes } from '../../../services/ticketApi';
+import { toast } from 'react-toastify';
 
 export default function Payment() {
   const [modality, setModality] = useState(null);
   const [hotelity, setHotelity] = useState(null);
+  const token = useToken();
 
   const presential = { name: 'Presencial', price: 250 };
   const online = { name: 'Online', price: 100 };
@@ -19,6 +19,25 @@ export default function Payment() {
   const withoutHotel = { name: 'Sem Hotel', price: 0 };
 
   const sum = (modality?.price ?? 0) + (hotelity?.price ?? 0);
+
+  async function handleSubmit() {
+    try {
+      const types = await getTypes(token);
+      const { id: ticketTypeId } = types.find((type) => type.price === sum);
+
+      await creteTicket({ ticketTypeId, token });
+
+      setModality(null);
+      setHotelity(null);
+      toast('Ingresso reservado com sucesso!');
+    } catch (err) {
+      toast('Não foi possível reservar o ingresso!');
+    }
+  }
+
+  function compare(obj1, obj2) {
+    return JSON.stringify(obj1) === JSON.stringify(obj2);
+  }
 
   return (
     <>
@@ -62,11 +81,7 @@ export default function Payment() {
       <Subtitle show={compare(modality, online) || hotelity !== null}>
         Fechado! O total ficou em <strong>R$ {sum}</strong>. Agora é só confirmar:
       </Subtitle>
-      <Button
-        type="button"
-        onClick={() => alert('Click do botão com sucesso, falta a requisição!')}
-        show={compare(modality, online) || hotelity !== null}
-      >
+      <Button type="button" onClick={handleSubmit} show={compare(modality, online) || hotelity !== null}>
         Reservar Ingresso
       </Button>
     </>
