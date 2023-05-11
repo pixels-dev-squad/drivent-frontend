@@ -13,21 +13,19 @@ export default function Hotel() {
   useEffect(() => {
     async function fetchHotels() {
       const hotel = await getHotels(token);
-      const newHotelsWithRooms = [];
-      hotel.map(async(h) => {
-        const hotelWithRooms = await getHotelById(token, h.id);
-        newHotelsWithRooms.push(hotelWithRooms);
-      });
+      const promisses = hotel.map((h) => getHotelById(token, h.id));
+      const newHotelsWithRooms = await Promise.all(promisses);
       setHotelsWithRooms(newHotelsWithRooms);
     }
 
     fetchHotels();
   }, [token]);
+
   //eslint-disable-next-line
-  hotelsWithRooms.map((h) => (
+  hotelsWithRooms.map((h) =>
     //eslint-disable-next-line
     console.log(h.image)
-  ));
+  );
   return (
     <>
       <Title>Escolha de hotel e quarto</Title>
