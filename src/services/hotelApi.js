@@ -17,3 +17,16 @@ export async function getHotelById(token, id) {
   });
   return response.data;
 }
+
+export async function bookRoom({ roomId, token }) {
+  const response = await api.post(
+    '/booking',
+    { roomId },
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+}

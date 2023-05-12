@@ -1,17 +1,20 @@
 import Title from '../../../components/TitlePage';
 import Subtitle from '../../../components/Subtitle';
 import HotelContainer from './HotelContainer';
-import { getHotels, getHotelById } from '../../../services/hotelApi';
+import { getHotels, getHotelById, bookRoom } from '../../../services/hotelApi';
 import useToken from '../../../hooks/useToken';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import RoomButton from '../../../components/Hotel/RoomButton';
+import Button from '../../../components/Form/Button';
+import { toast } from 'react-toastify';
 
 export default function Hotel() {
   const token = useToken();
   const [hotelsWithRooms, setHotelsWithRooms] = useState([]);
   const [selectedHotel, setSelectedHotel] = useState({});
   const [selectedRoom, setSelectedRoom] = useState({});
+  const reserveButtonRef = useRef(null);
 
   function handleSelectHotel(hotel) {
     if (selectedHotel.id === hotel.id) return setSelectedHotel({}) && setSelectedRoom({});
@@ -23,6 +26,19 @@ export default function Hotel() {
   function handleSelectRoom(room) {
     if (selectedRoom === room) return setSelectedRoom({});
     setSelectedRoom(room);
+    reserveButtonRef.current.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  async function handleSubmit() {
+    try {
+      await bookRoom({ roomId: selectedRoom.id, token });
+
+      setSelectedHotel({});
+      setSelectedRoom({});
+      toast(`Quarto ${selectedRoom.name} do hotel ${selectedHotel.name} reservado com sucesso!`);
+    } catch (err) {
+      toast('Não foi possível fazer a reserva do quarto!');
+    }
   }
 
   useEffect(() => {
@@ -57,7 +73,7 @@ export default function Hotel() {
     }
 
     fetchHotels();
-  }, [token]);
+  }, [token, selectedRoom]);
 
   return (
     <>
@@ -85,6 +101,10 @@ export default function Hotel() {
           <RoomButton active={selectedRoom.id === r.id} onClick={() => handleSelectRoom(r)} key={r.id} room={r} />
         ))}
       </RoomsContainerStyled>
+      <Button type="button" onClick={handleSubmit} show={!!selectedRoom.name}>
+        Reservar Quarto
+      </Button>
+      <div ref={reserveButtonRef}></div>
     </>
   );
 }
@@ -93,6 +113,7 @@ const HotelsContainerStyled = styled.div`
   display: flex;
   justify-content: start;
   gap: 10px;
+  margin-bottom: 33px;
 `;
 
 const RoomsContainerStyled = styled.div`
@@ -100,4 +121,5 @@ const RoomsContainerStyled = styled.div`
   justify-content: start;
   width: 100%;
   flex-wrap: wrap;
+  margin-bottom: 33px;
 `;
