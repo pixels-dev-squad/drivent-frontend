@@ -9,11 +9,12 @@ import { creteTicket, getTicket, getTypes } from '../../../services/ticketApi';
 import { toast } from 'react-toastify';
 import useEnrollment from '../../../hooks/api/useEnrollment';
 import CreditCard from '../../../components/Payment/CreditCard';
+import SummaryCard from '../../../components/Payment/SummaryCard';
 
 export default function Payment() {
   const [modality, setModality] = useState(null);
   const [hotelity, setHotelity] = useState(null);
-  const [ticket, setTicket] = useState(null);
+  const [ticket, setTicket] = useState([]);
   const [reserved, setReserved] = useState(false);
   const token = useToken();
 
@@ -27,8 +28,11 @@ export default function Payment() {
 
   useEffect(async() => {
     const userTicket = await getTicket(token);
-    
-    if (userTicket) return setReserved(true);
+
+    if (userTicket) {
+      setTicket(userTicket.TicketType);
+      setReserved(true);
+    }
   }, []);
 
   async function handleSubmit() {
@@ -36,13 +40,17 @@ export default function Payment() {
       const types = await getTypes(token);
       const { id: ticketTypeId } = types.find((type) => type.price === sum);
 
-      const response = await creteTicket({ ticketTypeId, token });
-      setTicket(response);
+      await creteTicket({ ticketTypeId, token });
 
       setModality(null);
       setHotelity(null);
       toast('Ingresso reservado com sucesso!');
-      setReserved(true);
+      const userTicket = await getTicket(token);
+
+      if (userTicket) {
+        setTicket(userTicket.TicketType);
+        setReserved(true);
+      }
     } catch (err) {
       toast('Não foi possível reservar o ingresso!');
     }
@@ -59,7 +67,7 @@ export default function Payment() {
         <CenterText>Você precisa completar sua inscrição antes de prosseguir pra escolha de ingresso</CenterText>
       </>
     );
-  };
+  }
 
   return (
     <>
@@ -107,8 +115,9 @@ export default function Payment() {
         Reservar Ingresso
       </Button>
       <Subtitle show={reserved ? true : false}>Ingresso escolhido</Subtitle>
+      <SummaryCard ticketType={ticket.name} price={ticket.price} show={reserved ? true : false}/>
       <Subtitle show={reserved ? true : false}>Pagamento</Subtitle>
-      <CreditCard show={reserved ? true : false}/>
+      <CreditCard show={reserved ? true : false} />
     </>
   );
 }
