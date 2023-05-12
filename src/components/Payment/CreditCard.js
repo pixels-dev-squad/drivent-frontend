@@ -3,7 +3,7 @@ import Cards from 'react-credit-cards-2';
 import 'react-credit-cards-2/dist/es/styles-compiled.css';
 import styled from 'styled-components';
 
-export default function CreditCard() {
+export default function CreditCard({ show }) {
   const [card, setCard] = useState({
     number: '',
     expiry: '',
@@ -25,7 +25,7 @@ export default function CreditCard() {
 
   return (
     <div>
-      <Allcards>
+      <Allcards show={show}>
         <Cards
           number={card.number}
           expiry={card.expiry}
@@ -85,7 +85,7 @@ export default function CreditCard() {
 }
 
 const Allcards = styled.div`
-  display: flex;
+  display: ${(props) => (props.show === true ? 'flex' : 'none')};
   form {
     display: flex;
     flex-wrap: wrap;
