@@ -15,20 +15,21 @@ export default function Hotel() {
       const hotel = await getHotels(token);
       const promisses = hotel.map((h) => getHotelById(token, h.id));
       const newHotelsWithRooms = await Promise.all(promisses);
-      let capacity = 0;
-      let acomodationType = [];
-
+      
       newHotelsWithRooms.map((h) => {
-        console.log(h);
+        let capacity = 0;
+        let acomodationType = [];
         h.Rooms.map((r) => {
-          console.log(r);
           if (r.capacity === 3 && !acomodationType.includes('Triple')) {
+            console.log(`o Hotel ${h.name} tem triple`);
             acomodationType.push('Triple');
           }
           if (r.capacity === 2 && !acomodationType.includes('Double')) {
+            console.log(`o Hotel ${h.name} tem double`);
             acomodationType.push('Double');
           }
           if (r.capacity === 1 && !acomodationType.includes('Single')) {
+            console.log(`o Hotel ${h.name} tem single`);
             acomodationType.push('Single');
           }
           capacity += r.capacity;
