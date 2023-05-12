@@ -5,13 +5,15 @@ import ModalityButton from '../../../components/Payment/ModalityButton';
 import { useState } from 'react';
 import Button from '../../../components/Form/Button';
 import useToken from '../../../hooks/useToken';
-import { creteTicket, getTypes } from '../../../services/ticketApi';
+import { creteTicket, getTicket, getTypes } from '../../../services/ticketApi';
 import { toast } from 'react-toastify';
 import useEnrollment from '../../../hooks/api/useEnrollment';
+import CreditCard from '../../../components/Payment/CreditCard';
 
 export default function Payment() {
   const [modality, setModality] = useState(null);
   const [hotelity, setHotelity] = useState(null);
+  const [ticket, setTicket] = useState(null);
   const token = useToken();
 
   const presential = { name: 'Presencial', price: 250 };
@@ -27,7 +29,8 @@ export default function Payment() {
       const types = await getTypes(token);
       const { id: ticketTypeId } = types.find((type) => type.price === sum);
 
-      await creteTicket({ ticketTypeId, token });
+      const response = await creteTicket({ ticketTypeId, token });
+      setTicket(response);
 
       setModality(null);
       setHotelity(null);
@@ -116,5 +119,5 @@ const CenterText = styled.div`
   font-size: 20px;
   text-align: center;
   margin-left: 200px;
-  color: #8E8E8E;
+  color: #8e8e8e;
 `;
