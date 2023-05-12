@@ -30,6 +30,29 @@ export default function Hotel() {
       const hotel = await getHotels(token);
       const promisses = await hotel.map((h) => getHotelById(token, h.id));
       const newHotelsWithRooms = await Promise.all(promisses);
+
+      newHotelsWithRooms.map((h) => {
+        let capacity = 0;
+        let acomodationType = [];
+        h.Rooms.map((r) => {
+          if (r.capacity === 3 && !acomodationType.includes('Triple')) {
+            // console.log(`o Hotel ${h.name} tem triple`);
+            acomodationType.push('Triple');
+          }
+          if (r.capacity === 2 && !acomodationType.includes('Double')) {
+            // console.log(`o Hotel ${h.name} tem double`);
+            acomodationType.push('Double');
+          }
+          if (r.capacity === 1 && !acomodationType.includes('Single')) {
+            // console.log(`o Hotel ${h.name} tem single`);
+            acomodationType.push('Single');
+          }
+          capacity += r.capacity;
+        });
+
+        h['capacity'] = capacity;
+        h['acomodationType'] = acomodationType;
+      });
       setHotelsWithRooms(newHotelsWithRooms);
     }
 
@@ -42,7 +65,17 @@ export default function Hotel() {
       <Subtitle show={true}>Primeiro, escolha seu hotel</Subtitle>
       <HotelsContainerStyled>
         {hotelsWithRooms.map((h) => (
-          <HotelContainer image={h.image} name={h.name} key={h.id} onClick={() => handleSelectHotel(h)} />
+          <HotelContainer
+            image={h.image}
+            name={h.name}
+            key={h.id}
+            capacity={h.capacity}
+            acomodationType={h.acomodationType}
+            hotelId={h.id}
+            rooms={h.Rooms}
+            selected={selectedHotel.name === h.name}
+            onClick={() => handleSelectHotel(h)}
+          />
         ))}
       </HotelsContainerStyled>
 
@@ -59,6 +92,7 @@ export default function Hotel() {
 const HotelsContainerStyled = styled.div`
   display: flex;
   justify-content: start;
+  gap: 10px;
 `;
 
 const RoomsContainerStyled = styled.div`
