@@ -2,7 +2,7 @@ import styled from 'styled-components';
 import Subtitle from '../../../components/Subtitle';
 import Title from '../../../components/TitlePage';
 import ModalityButton from '../../../components/Payment/ModalityButton';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Button from '../../../components/Form/Button';
 import useToken from '../../../hooks/useToken';
 import { creteTicket, getTicket, getTypes } from '../../../services/ticketApi';
@@ -14,6 +14,7 @@ export default function Payment() {
   const [modality, setModality] = useState(null);
   const [hotelity, setHotelity] = useState(null);
   const [ticket, setTicket] = useState(null);
+  const [reserved, setReserved] = useState(false);
   const token = useToken();
 
   const presential = { name: 'Presencial', price: 250 };
@@ -23,6 +24,12 @@ export default function Payment() {
   const { enrollment } = useEnrollment();
 
   const sum = (modality?.price ?? 0) + (hotelity?.price ?? 0);
+
+  useEffect(async() => {
+    const userTicket = await getTicket(token);
+    
+    if (userTicket) return setReserved(true);
+  }, []);
 
   async function handleSubmit() {
     try {
@@ -35,6 +42,7 @@ export default function Payment() {
       setModality(null);
       setHotelity(null);
       toast('Ingresso reservado com sucesso!');
+      setReserved(true);
     } catch (err) {
       toast('Não foi possível reservar o ingresso!');
     }
@@ -56,8 +64,8 @@ export default function Payment() {
   return (
     <>
       <Title>Ingresso e Pagamento</Title>
-      <Subtitle show={true}>Primeiro, escolha sua modalidade de ingresso</Subtitle>
-      <ModalityBox show={true}>
+      <Subtitle show={reserved ? false : true}>Primeiro, escolha sua modalidade de ingresso</Subtitle>
+      <ModalityBox show={reserved ? false : true}>
         <ModalityButton
           onClick={() =>
             compare(modality, presential) ? (setModality(null), setHotelity(null)) : setModality(presential)
@@ -98,6 +106,9 @@ export default function Payment() {
       <Button type="button" onClick={handleSubmit} show={compare(modality, online) || hotelity !== null}>
         Reservar Ingresso
       </Button>
+      <Subtitle show={reserved ? true : false}>Ingresso escolhido</Subtitle>
+      <Subtitle show={reserved ? true : false}>Pagamento</Subtitle>
+      <CreditCard show={reserved ? true : false}/>
     </>
   );
 }
