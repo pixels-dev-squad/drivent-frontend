@@ -9,13 +9,14 @@ import styled from 'styled-components';
 export default function Hotel() {
   const token = useToken();
   const [hotelsWithRooms, setHotelsWithRooms] = useState([]);
+  const [infosHotelSelected, setInfosHotelSelected] = useState();
 
   useEffect(() => {
     async function fetchHotels() {
       const hotel = await getHotels(token);
       const promisses = hotel.map((h) => getHotelById(token, h.id));
       const newHotelsWithRooms = await Promise.all(promisses);
-      
+
       newHotelsWithRooms.map((h) => {
         let capacity = 0;
         let acomodationType = [];
@@ -43,7 +44,6 @@ export default function Hotel() {
 
     fetchHotels();
   }, [token]);
-  console.log(hotelsWithRooms);
   //eslint-disable-next-line
   //eslint-disable-next-line
   return (
@@ -60,6 +60,7 @@ export default function Hotel() {
             acomodationType={h.acomodationType}
             hotelId={h.id}
             rooms={h.Rooms}
+            setInfosHotelSelected={setInfosHotelSelected}
           />
         ))}
       </HotelsContainerStyled>

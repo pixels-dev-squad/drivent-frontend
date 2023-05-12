@@ -1,10 +1,15 @@
 import styled from 'styled-components';
 import { useState } from 'react';
 export default function HotelContainer(props) {
-  console.log(props);
   const [clicked, setClicked] = useState(false);
   return (
-    <HotelContainerStyled onClick={() => setClicked(!clicked)} clicked={clicked}>
+    <HotelContainerStyled
+      onClick={() => {
+        setClicked(!clicked);
+        props.setInfosHotelSelected(props);
+      }}
+      clicked={clicked}
+    >
       <ImageContainerStyled>
         <img src={props.image} width={'168px'} height={'109px'}></img>
       </ImageContainerStyled>
@@ -36,6 +41,9 @@ const HotelContainerStyled = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  :hover {
+    cursor: pointer;
+  }
 `;
 
 const DescriptionContainerStyled = styled.div`
