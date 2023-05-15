@@ -24,8 +24,11 @@ export default function Hotel() {
   }
 
   function handleSelectRoom(room) {
-    if (selectedRoom === room) return setSelectedRoom({});
+    if (selectedRoom === room) {
+      return setSelectedRoom({});
+    }
     setSelectedRoom(room);
+    console.log(room);
     reserveButtonRef.current.scrollIntoView({ behavior: 'smooth' });
   }
 
@@ -51,19 +54,20 @@ export default function Hotel() {
         let capacity = 0;
         let acomodationType = [];
         h.Rooms.map((r) => {
+          let availableVacancies = 0;
+          availableVacancies = r.capacity - r.ocupation;
+          console.log(r);
           if (r.capacity === 3 && !acomodationType.includes('Triple')) {
-            // console.log(`o Hotel ${h.name} tem triple`);
             acomodationType.push('Triple');
           }
           if (r.capacity === 2 && !acomodationType.includes('Double')) {
-            // console.log(`o Hotel ${h.name} tem double`);
             acomodationType.push('Double');
           }
           if (r.capacity === 1 && !acomodationType.includes('Single')) {
-            // console.log(`o Hotel ${h.name} tem single`);
             acomodationType.push('Single');
           }
-          capacity += r.capacity;
+
+          capacity += availableVacancies; 
         });
 
         h['capacity'] = capacity;
@@ -89,6 +93,7 @@ export default function Hotel() {
             acomodationType={h.acomodationType}
             hotelId={h.id}
             rooms={h.Rooms}
+            //aqui ele verificando se o hotel que eu to clicando é o hotel que ja foi clicado
             selected={selectedHotel.name === h.name}
             onClick={() => handleSelectHotel(h)}
           />
