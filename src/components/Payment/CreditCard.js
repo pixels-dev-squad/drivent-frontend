@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import Cards from 'react-credit-cards-2';
 import 'react-credit-cards-2/dist/es/styles-compiled.css';
 import styled from 'styled-components';
+import Button from '../Form/Button';
+import { toast } from 'react-toastify';
 
-export default function CreditCard({ show }) {
+export default function CreditCard({ show, finalizePayment }) {
   const [card, setCard] = useState({
     number: '',
     expiry: '',
@@ -12,6 +14,14 @@ export default function CreditCard({ show }) {
     focus: '',
     issuer: '',
   });
+  const visaRegex = /^4/;
+  const mastercardRegex = /^5[1-5]/;
+  const amexRegex = /^3[47]/;
+
+  if (visaRegex.test(card.number)) card.issuer = 'VISA';
+  if (mastercardRegex.test(card.number)) card.issuer = 'MASTERCARD';
+  if (amexRegex.test(card.number)) card.issuer = 'AMEX';
+  if (!visaRegex.test(card.number) && !mastercardRegex.test(card.number) && !amexRegex.test(card.number)) card.issuer = 'UNKNOWN';
 
   const handleInputChange = (evt) => {
     const { name, value } = evt.target;
@@ -23,6 +33,15 @@ export default function CreditCard({ show }) {
     setCard((prev) => ({ ...prev, focus: evt.target.name }));
   };
 
+  function checkPaymentInformations() {
+    if (card.cvc === '' || card.expiry === '' || card.focus === '' || card.number === '' || card.name === '')
+      return toast('Preencha corretamente os dados do cartão');
+    if (isNaN(Number(card.number) && Number(card.cvc) && Number(card.expiry)) || card.issuer === 'UNKNOWN')
+      return toast('Preencha corretamente os dados do cartão');
+
+    finalizePayment({ card, setCard });
+  }
+
   return (
     <div>
       <Allcards show={show}>
@@ -32,7 +51,7 @@ export default function CreditCard({ show }) {
           cvc={card.cvc}
           name={card.name}
           focused={card.focus}
-          acceptedCards={['visa', 'mastercard']}
+          acceptedCards={['visa', 'mastercard', 'american-express']}
           // callback={(e) => setCard({ ...card, issuer: e.issuer.toUpperCase() })}
         />
         <form>
@@ -80,12 +99,14 @@ export default function CreditCard({ show }) {
           />
         </form>
       </Allcards>
+      <Button onClick={checkPaymentInformations}>FINALIZAR PAGAMENTO</Button>
     </div>
   );
 }
 
 const Allcards = styled.div`
   display: ${(props) => (props.show === true ? 'flex' : 'none')};
+  margin-bottom: 37px;
   form {
     display: flex;
     flex-wrap: wrap;

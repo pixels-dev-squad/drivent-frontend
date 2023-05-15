@@ -10,11 +10,13 @@ import { toast } from 'react-toastify';
 import useEnrollment from '../../../hooks/api/useEnrollment';
 import CreditCard from '../../../components/Payment/CreditCard';
 import SummaryCard from '../../../components/Payment/SummaryCard';
+import { paymentProcess } from '../../../services/paymentApi';
 
 export default function Payment() {
   const [modality, setModality] = useState(null);
   const [hotelity, setHotelity] = useState(null);
   const [ticket, setTicket] = useState([]);
+  const [ticketType, setTicketType] = useState([]);
   const [reserved, setReserved] = useState(false);
   const token = useToken();
 
@@ -30,7 +32,8 @@ export default function Payment() {
     const userTicket = await getTicket(token);
 
     if (userTicket) {
-      setTicket(userTicket.TicketType);
+      setTicket(userTicket);
+      setTicketType(userTicket.TicketType);
       setReserved(true);
     }
   }, []);
@@ -48,7 +51,8 @@ export default function Payment() {
       const userTicket = await getTicket(token);
 
       if (userTicket) {
-        setTicket(userTicket.TicketType);
+        setTicket(userTicket);
+        setTicketType(userTicket.TicketType);
         setReserved(true);
       }
     } catch (err) {
@@ -67,6 +71,28 @@ export default function Payment() {
         <CenterText>Você precisa completar sua inscrição antes de prosseguir pra escolha de ingresso</CenterText>
       </>
     );
+  }
+
+  async function finalizePayment({ card, setCard }) {
+    const body = {
+      ticketId: ticket.id,
+      cardData: {
+        issuer: card.issuer,
+        number: Number(card.number),
+        name: card.name,
+        expirationDate: card.expiry,
+        cvv: Number(card.cvc)
+      }
+    };
+
+    try {
+      await paymentProcess({ body, token });
+
+      toast('Seu ticket foi pago');
+    } catch (err) {
+      setCard({ ...card });
+      toast('Ocorreu um erro com o seu pagamento');
+    }
   }
 
   return (
@@ -115,9 +141,9 @@ export default function Payment() {
         Reservar Ingresso
       </Button>
       <Subtitle show={reserved ? true : false}>Ingresso escolhido</Subtitle>
-      <SummaryCard ticketType={ticket.name} price={ticket.price} show={reserved ? true : false}/>
+      <SummaryCard ticketType={ticketType.name} price={ticketType.price} show={reserved ? true : false}/>
       <Subtitle show={reserved ? true : false}>Pagamento</Subtitle>
-      <CreditCard show={reserved ? true : false} />
+      <CreditCard show={reserved ? true : false} finalizePayment={finalizePayment}/>
     </>
   );
 }
