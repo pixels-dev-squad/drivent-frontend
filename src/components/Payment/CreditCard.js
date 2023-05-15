@@ -99,7 +99,7 @@ export default function CreditCard({ show, finalizePayment }) {
           />
         </form>
       </Allcards>
-      <Button onClick={checkPaymentInformations}>FINALIZAR PAGAMENTO</Button>
+      <Button onClick={checkPaymentInformations} show={show}>FINALIZAR PAGAMENTO</Button>
     </div>
   );
 }

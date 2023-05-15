@@ -18,6 +18,7 @@ export default function Payment() {
   const [ticket, setTicket] = useState([]);
   const [ticketType, setTicketType] = useState([]);
   const [reserved, setReserved] = useState(false);
+  const [isPaid, setIsPaid] = useState(false);
   const token = useToken();
 
   const presential = { name: 'Presencial', price: 250 };
@@ -30,6 +31,12 @@ export default function Payment() {
 
   useEffect(async() => {
     const userTicket = await getTicket(token);
+
+    if (userTicket.status === 'PAID') {
+      setTicket(userTicket);
+      setTicketType(userTicket.TicketType);
+      setIsPaid(true);
+    }
 
     if (userTicket) {
       setTicket(userTicket);
@@ -89,6 +96,7 @@ export default function Payment() {
       await paymentProcess({ body, token });
 
       toast('Seu ticket foi pago');
+      setIsPaid(true);
     } catch (err) {
       setCard({ ...card });
       toast('Ocorreu um erro com o seu pagamento');
@@ -143,7 +151,21 @@ export default function Payment() {
       <Subtitle show={reserved ? true : false}>Ingresso escolhido</Subtitle>
       <SummaryCard ticketType={ticketType.name} price={ticketType.price} show={reserved ? true : false}/>
       <Subtitle show={reserved ? true : false}>Pagamento</Subtitle>
-      <CreditCard show={reserved ? true : false} finalizePayment={finalizePayment}/>
+      <CreditCard show={reserved && !isPaid ? true : false} finalizePayment={finalizePayment}/>
+      <PaymentDone show={isPaid ? true : false}>
+        <div style={{
+          width: '35px',
+          height: '35px',
+          borderRadius: '50%',
+          backgroundColor: '#4CAF50',
+          marginRight: '8px',
+        }}/>
+
+        <div>
+          <strong>Pagamento confirmado!</strong>
+          <p>Prossiga para escolha de hospedagem e atividades</p>
+        </div>
+      </PaymentDone>
     </>
   );
 }
@@ -166,4 +188,10 @@ const CenterText = styled.div`
   text-align: center;
   margin-left: 200px;
   color: #8e8e8e;
+`;
+
+const PaymentDone = styled.div`
+  display: ${(props) => (props.show === true ? 'flex' : 'none')};
+  align-items: center;
+  margin-top: 8px;
 `;
