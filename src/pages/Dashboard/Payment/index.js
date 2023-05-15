@@ -11,6 +11,7 @@ import useEnrollment from '../../../hooks/api/useEnrollment';
 import CreditCard from '../../../components/Payment/CreditCard';
 import SummaryCard from '../../../components/Payment/SummaryCard';
 import { paymentProcess } from '../../../services/paymentApi';
+import { BsCheckCircleFill } from 'react-icons/bs';
 
 export default function Payment() {
   const [modality, setModality] = useState(null);
@@ -153,13 +154,9 @@ export default function Payment() {
       <Subtitle show={reserved ? true : false}>Pagamento</Subtitle>
       <CreditCard show={reserved && !isPaid ? true : false} finalizePayment={finalizePayment}/>
       <PaymentDone show={isPaid ? true : false}>
-        <div style={{
-          width: '35px',
-          height: '35px',
-          borderRadius: '50%',
-          backgroundColor: '#4CAF50',
-          marginRight: '8px',
-        }}/>
+        <div>
+          <BsCheckCircleFill />
+        </div>
 
         <div>
           <strong>Pagamento confirmado!</strong>
@@ -194,4 +191,9 @@ const PaymentDone = styled.div`
   display: ${(props) => (props.show === true ? 'flex' : 'none')};
   align-items: center;
   margin-top: 8px;
+  svg {
+    font-size: 37px;
+    margin-right: 13px;
+    color: #36B853;
+  }
 `;
