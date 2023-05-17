@@ -1,7 +1,7 @@
 import Title from '../../../components/TitlePage';
 import Subtitle from '../../../components/Subtitle';
-import HotelContainer from './HotelContainer';
-import { getHotels, getHotelById, bookRoom } from '../../../services/hotelApi';
+import { ReservedHotelContainer, HotelContainer } from './HotelContainer';
+import { getHotels, getHotelById, bookRoom, getBooking, changeRoom } from '../../../services/hotelApi';
 import useToken from '../../../hooks/useToken';
 import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
@@ -15,6 +15,8 @@ export default function Hotel() {
   const [selectedHotel, setSelectedHotel] = useState({});
   const [selectedRoom, setSelectedRoom] = useState({});
   const reserveButtonRef = useRef(null);
+  const [reserved, setReserved] = useState(false);
+  const [reservedHotel, setReservedHotel] = useState({});
 
   function handleSelectHotel(hotel) {
     if (selectedHotel.id === hotel.id) return setSelectedHotel({}) && setSelectedRoom({});
@@ -28,13 +30,14 @@ export default function Hotel() {
       return setSelectedRoom({});
     }
     setSelectedRoom(room);
-    console.log(room);
     reserveButtonRef.current.scrollIntoView({ behavior: 'smooth' });
   }
 
-  async function handleSubmit() {
+  async function makeReservation() {
     try {
-      await bookRoom({ roomId: selectedRoom.id, token });
+      const booking = await getBooking(token);
+      if (booking) await changeRoom({ token, bookingId: booking.id, roomId: selectedRoom.id });
+      if (!booking) await bookRoom({ roomId: selectedRoom.id, token });
 
       setSelectedHotel({});
       setSelectedRoom({});
@@ -42,6 +45,13 @@ export default function Hotel() {
     } catch (err) {
       toast('Não foi possível fazer a reserva do quarto!');
     }
+  }
+
+  async function swapRoom() {
+    setSelectedHotel(reservedHotel);
+    setSelectedRoom(reservedHotel.Room);
+    setReserved(false);
+    setReservedHotel({});
   }
 
   useEffect(() => {
@@ -56,7 +66,6 @@ export default function Hotel() {
         h.Rooms.map((r) => {
           let availableVacancies = 0;
           availableVacancies = r.capacity - r.ocupation;
-          console.log(r);
           if (r.capacity === 3 && !acomodationType.includes('Triple')) {
             acomodationType.push('Triple');
           }
@@ -67,23 +76,33 @@ export default function Hotel() {
             acomodationType.push('Single');
           }
 
-          capacity += availableVacancies; 
+          capacity += availableVacancies;
         });
 
         h['capacity'] = capacity;
         h['acomodationType'] = acomodationType;
       });
+      const booking = await getBooking(token);
+      if (booking && !selectedHotel.name) {
+        const hotel = newHotelsWithRooms.find((h) => h.id === booking.Room.hotelId);
+        hotel.Room = hotel.Rooms.find((r) => r.id === booking.Room.id);
+        hotel.bookingId = booking.id;
+
+        setReserved(true);
+        setReservedHotel(hotel);
+      }
+
       setHotelsWithRooms(newHotelsWithRooms);
     }
 
     fetchHotels();
-  }, [token, selectedRoom]);
+  }, [token, selectedHotel, selectedRoom]);
 
   return (
     <>
       <Title>Escolha de hotel e quarto</Title>
-      <Subtitle show={true}>Primeiro, escolha seu hotel</Subtitle>
-      <HotelsContainerStyled>
+      <Subtitle show={reserved ? false : true}>Primeiro, escolha seu hotel</Subtitle>
+      <HotelsContainerStyled show={reserved ? false : true}>
         {hotelsWithRooms.map((h) => (
           <HotelContainer
             image={h.image}
@@ -106,10 +125,27 @@ export default function Hotel() {
           <RoomButton active={selectedRoom.id === r.id} onClick={() => handleSelectRoom(r)} key={r.id} room={r} />
         ))}
       </RoomsContainerStyled>
-      <Button type="button" onClick={handleSubmit} show={!!selectedRoom.name}>
+      <Button type="button" onClick={makeReservation} show={!!selectedRoom.name}>
         Reservar Quarto
       </Button>
       <div ref={reserveButtonRef}></div>
+
+      <Subtitle show={reserved ? true : false}>Você já escolheu seu quarto:</Subtitle>
+      {!!reservedHotel.name && (
+        <ReservedHotelContainer
+          image={reservedHotel?.image}
+          name={reservedHotel?.name}
+          key={reservedHotel?.id}
+          capacity={reservedHotel?.Room.capacity}
+          ocupation={reservedHotel?.Room.ocupation}
+          roomName={reservedHotel?.Room.name}
+          selected={true}
+          reservedHotel={reservedHotel}
+        />
+      )}
+      <Button type="button" onClick={swapRoom} show={reserved}>
+        Trocar de Quarto
+      </Button>
     </>
   );
 }
@@ -119,6 +155,7 @@ const HotelsContainerStyled = styled.div`
   justify-content: start;
   gap: 10px;
   margin-bottom: 33px;
+  display: ${(props) => (props.show === true ? 'flex' : 'none')};
 `;
 
 const RoomsContainerStyled = styled.div`
