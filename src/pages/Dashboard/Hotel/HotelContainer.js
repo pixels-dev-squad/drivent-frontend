@@ -1,6 +1,7 @@
 import styled from 'styled-components';
+import Button from '../../../components/Form/Button';
 
-export default function HotelContainer(props) {
+export function HotelContainer(props) {
   return (
     <HotelContainerStyled onClick={() => props.onClick()} selected={props.selected}>
       <ImageContainerStyled>
@@ -24,6 +25,41 @@ export default function HotelContainer(props) {
   );
 }
 
+export function HotelReserved(props) {
+  console.log(props.booking);
+  return (
+    <>
+      <HotelContainerStyled onClick={() => props.onClick()} selected={true}>
+        <ImageContainerStyled>
+          <img src={props.booking.image} alt="Imagem do hotel." width={'168px'} height={'109px'}></img>
+        </ImageContainerStyled>
+
+        <DescriptionContainerStyled>
+          <h1>{props.booking.hotelName}</h1>
+          <InformationContainerStyled>
+            <h1>Quarto Reservado</h1>
+            <h2>
+              {`${props.booking.name} (${
+                props.booking.capacity === 3 ? 'Triple' : props.booking.capacity === 2 ? 'Double' : 'Single'
+              })`}
+            </h2>
+          </InformationContainerStyled>
+          <InformationContainerStyled>
+            <h1>Pessoas no Seu quarto</h1>
+            <h2>
+              {props.booking.ocupation === 1
+                ? 'Apenas você'
+                : props.booking.ocupation === 2
+                  ? 'Você e mais um'
+                  : 'Você e mais dois'}
+            </h2>
+          </InformationContainerStyled>
+        </DescriptionContainerStyled>
+      </HotelContainerStyled>
+    </>
+  );
+}
+
 const HotelContainerStyled = styled.div`
   width: 196px;
   height: 264px;
@@ -39,7 +75,7 @@ const HotelContainerStyled = styled.div`
   }
 `;
 
-const DescriptionContainerStyled = styled.div`
+export const DescriptionContainerStyled = styled.div`
   width: 100%;
   height: 117px;
   display: flex;
@@ -49,12 +85,12 @@ const DescriptionContainerStyled = styled.div`
   }
 `;
 
-const ImageContainerStyled = styled.div`
+export const ImageContainerStyled = styled.div`
   width: 168px;
   height: 109px;
 `;
 
-const InformationContainerStyled = styled.div`
+export const InformationContainerStyled = styled.div`
   width: 100%;
   font-size: 12px;
   font-weight: 700;

@@ -11,7 +11,7 @@ import useEnrollment from '../../../hooks/api/useEnrollment';
 import CreditCard from '../../../components/Payment/CreditCard';
 import SummaryCard from '../../../components/Payment/SummaryCard';
 import { paymentProcess } from '../../../services/paymentApi';
-import { BsCheckCircleFill } from 'react-icons/bs';
+// import { BsCheckCircleFill } from 'react-icons/bs';
 
 export default function Payment() {
   const [modality, setModality] = useState(null);
@@ -155,7 +155,7 @@ export default function Payment() {
       <CreditCard show={reserved && !isPaid ? true : false} finalizePayment={finalizePayment}/>
       <PaymentDone show={isPaid ? true : false}>
         <div>
-          <BsCheckCircleFill />
+          {/* <BsCheckCircleFill /> */}
         </div>
 
         <div>

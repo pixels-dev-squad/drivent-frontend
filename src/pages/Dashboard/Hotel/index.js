@@ -1,7 +1,7 @@
 import Title from '../../../components/TitlePage';
 import Subtitle from '../../../components/Subtitle';
-import HotelContainer from './HotelContainer';
-import { getHotels, getHotelById, bookRoom } from '../../../services/hotelApi';
+import { HotelContainer, HotelReserved } from './HotelContainer';
+import { getHotels, getHotelById, bookRoom, getBooking } from '../../../services/hotelApi';
 import useToken from '../../../hooks/useToken';
 import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
@@ -14,7 +14,25 @@ export default function Hotel() {
   const [hotelsWithRooms, setHotelsWithRooms] = useState([]);
   const [selectedHotel, setSelectedHotel] = useState({});
   const [selectedRoom, setSelectedRoom] = useState({});
+  const [reserved, setReserved] = useState(false);
+  const [booking, setBooking] = useState({});
   const reserveButtonRef = useRef(null);
+  console.log(booking);
+
+  async function verifyBooking(token) {
+    const {Room} = await getBooking(token);
+
+    console.log(Room);
+    if (response.Room.id > 0) {
+      console.log('teste');
+      return setBooking({});
+    } else {
+      const hotel = await getHotelById(token, Room.hotelId);
+      const room = hotel.Rooms.find((room) => room.name === Room.name);
+      const ocupation = room.ocupation;
+      setBooking({ ...Room, hotelName: hotel.name, roomOcupation: ocupation, image: hotel.image });
+    }
+  }
 
   function handleSelectHotel(hotel) {
     if (selectedHotel.id === hotel.id) return setSelectedHotel({}) && setSelectedRoom({});
@@ -34,10 +52,11 @@ export default function Hotel() {
 
   async function handleSubmit() {
     try {
+      // console.log(selectedHotel);
       await bookRoom({ roomId: selectedRoom.id, token });
-
       setSelectedHotel({});
       setSelectedRoom({});
+      verifyBooking(token);
       toast(`Quarto ${selectedRoom.name} do hotel ${selectedHotel.name} reservado com sucesso!`);
     } catch (err) {
       toast('Não foi possível fazer a reserva do quarto!');
@@ -46,6 +65,7 @@ export default function Hotel() {
 
   useEffect(() => {
     async function fetchHotels() {
+      verifyBooking(token);
       const hotel = await getHotels(token);
       const promisses = await hotel.map((h) => getHotelById(token, h.id));
       const newHotelsWithRooms = await Promise.all(promisses);
@@ -56,7 +76,6 @@ export default function Hotel() {
         h.Rooms.map((r) => {
           let availableVacancies = 0;
           availableVacancies = r.capacity - r.ocupation;
-          console.log(r);
           if (r.capacity === 3 && !acomodationType.includes('Triple')) {
             acomodationType.push('Triple');
           }
@@ -67,7 +86,7 @@ export default function Hotel() {
             acomodationType.push('Single');
           }
 
-          capacity += availableVacancies; 
+          capacity += availableVacancies;
         });
 
         h['capacity'] = capacity;
@@ -82,23 +101,30 @@ export default function Hotel() {
   return (
     <>
       <Title>Escolha de hotel e quarto</Title>
-      <Subtitle show={true}>Primeiro, escolha seu hotel</Subtitle>
+      <Subtitle show={true}>
+        {Object.keys(booking).length === 0 ? 'Primeiro, escolha seu hotel' : 'Você ja escolheu o seu quarto'}
+      </Subtitle>
       <HotelsContainerStyled>
-        {hotelsWithRooms.map((h) => (
-          <HotelContainer
-            image={h.image}
-            name={h.name}
-            key={h.id}
-            capacity={h.capacity}
-            acomodationType={h.acomodationType}
-            hotelId={h.id}
-            rooms={h.Rooms}
-            //aqui ele verificando se o hotel que eu to clicando é o hotel que ja foi clicado
-            selected={selectedHotel.name === h.name}
-            onClick={() => handleSelectHotel(h)}
-          />
-        ))}
+        {Object.keys(booking).length === 0 ? (
+          hotelsWithRooms.map((h) => (
+            <HotelContainer
+              image={h.image}
+              name={h.name}
+              key={h.id}
+              capacity={h.capacity}
+              acomodationType={h.acomodationType}
+              hotelId={h.id}
+              rooms={h.Rooms}
+              //aqui ele verificando se o hotel que eu to clicando é o hotel que ja foi clicado
+              selected={selectedHotel.name === h.name}
+              onClick={() => handleSelectHotel(h)}
+            />
+          ))
+        ) : (
+          <HotelReserved booking={booking}></HotelReserved>
+        )}
       </HotelsContainerStyled>
+      {Object.keys(booking).length !== 0 ? <Button type="button">TROCAR DE QUARTO</Button> : ''}
 
       <Subtitle show={!!selectedHotel.name}>Ótima pedida! Agora escolha seu quarto</Subtitle>
       <RoomsContainerStyled>
