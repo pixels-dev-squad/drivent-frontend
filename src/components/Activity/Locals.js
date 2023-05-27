@@ -34,5 +34,9 @@ const ActivitiesContainer = styled.div`
   border: 1px solid #d7d7d7;
   padding: 10px 9px;
   text-align: start;
+  overflow-y: auto;
   gap: 10px;
+  &::-webkit-scrollbar{
+    display: none;
+  }
 `;

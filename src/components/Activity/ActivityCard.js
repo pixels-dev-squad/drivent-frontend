@@ -4,7 +4,7 @@ import { HiXCircle } from 'react-icons/hi';
 
 export default function ActivityCard({ name, capacity, start, end }) {
   return (
-    <Activity capacity={capacity}>
+    <Activity capacity={capacity} start={start.slice(0, -6)} end={end.slice(0, -6)}>
       <div>
         <p>{name}</p>
         <span>
@@ -31,8 +31,11 @@ export default function ActivityCard({ name, capacity, start, end }) {
 const Activity = styled.div`
   display: flex;
   justify-content: space-between;
+  flex-shrink: 0;
   width: 265px;
-  height: 79px;
+  height: ${(props) => {
+    return (props.end - props.start) * 80;
+  }}px;
   background-color: #f1f1f1;
   border-radius: 5px;
   padding: 12px 0px 10px 10px;
@@ -57,11 +60,11 @@ const Activity = styled.div`
     border-left: 1px solid #cfcfcf;
     p {
       font-size: 9px;
-      color: ${(props) => props.capacity <= 0 ? '#CC6666' : '#078632'};
+      color: ${(props) => (props.capacity <= 0 ? '#CC6666' : '#078632')};
     }
     svg {
       font-size: 25px;
-      color: ${(props) => props.capacity <= 0 ? '#CC6666' : '#078632'};
+      color: ${(props) => (props.capacity <= 0 ? '#CC6666' : '#078632')};
       margin-bottom: 2px;
     }
   }
