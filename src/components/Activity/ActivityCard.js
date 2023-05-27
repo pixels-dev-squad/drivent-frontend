@@ -1,16 +1,28 @@
 import styled from 'styled-components';
 import { HiArrowLeftOnRectangle } from 'react-icons/hi2';
+import { HiXCircle } from 'react-icons/hi';
 
-export default function ActivityCard() {
+export default function ActivityCard({ name, capacity, start, end }) {
   return (
-    <Activity>
+    <Activity capacity={capacity}>
       <div>
-        <p>Minecraft: montando o PC ideal</p>
-        <span>09:00 - 10:00</span>
+        <p>{name}</p>
+        <span>
+          {start.slice(0, -3)} - {end.slice(0, -3)}
+        </span>
       </div>
       <div>
-        <HiArrowLeftOnRectangle />
-        <p>27 vagas</p>
+        {capacity <= 0 ? (
+          <>
+            <HiXCircle />
+            <p>Esgotado</p>
+          </>
+        ) : (
+          <>
+            <HiArrowLeftOnRectangle />
+            <p>{capacity} vagas</p>
+          </>
+        )}
       </div>
     </Activity>
   );
@@ -45,11 +57,11 @@ const Activity = styled.div`
     border-left: 1px solid #cfcfcf;
     p {
       font-size: 9px;
-      color: #078632;
+      color: ${(props) => props.capacity <= 0 ? '#CC6666' : '#078632'};
     }
     svg {
-      font-size: 20px;
-      color: #078632;
+      font-size: 25px;
+      color: ${(props) => props.capacity <= 0 ? '#CC6666' : '#078632'};
       margin-bottom: 2px;
     }
   }
