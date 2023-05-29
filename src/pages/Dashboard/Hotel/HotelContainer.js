@@ -25,38 +25,31 @@ export function HotelContainer(props) {
   );
 }
 
-export function HotelReserved(props) {
-  console.log(props.booking);
-  return (
-    <>
-      <HotelContainerStyled onClick={() => props.onClick()} selected={true}>
-        <ImageContainerStyled>
-          <img src={props.booking.image} alt="Imagem do hotel." width={'168px'} height={'109px'}></img>
-        </ImageContainerStyled>
+export function ReservedHotelContainer(props) {
+  if (!props.name) return;
+  let acomodationType;
+  if (props.capacity === 1) acomodationType = 'Single';
+  if (props.capacity === 2) acomodationType = 'Double';
+  if (props.capacity === 3) acomodationType = 'Triple';
 
-        <DescriptionContainerStyled>
-          <h1>{props.booking.hotelName}</h1>
-          <InformationContainerStyled>
-            <h1>Quarto Reservado</h1>
-            <h2>
-              {`${props.booking.name} (${
-                props.booking.capacity === 3 ? 'Triple' : props.booking.capacity === 2 ? 'Double' : 'Single'
-              })`}
-            </h2>
-          </InformationContainerStyled>
-          <InformationContainerStyled>
-            <h1>Pessoas no Seu quarto</h1>
-            <h2>
-              {props.booking.ocupation === 1
-                ? 'Apenas você'
-                : props.booking.ocupation === 2
-                  ? 'Você e mais um'
-                  : 'Você e mais dois'}
-            </h2>
-          </InformationContainerStyled>
-        </DescriptionContainerStyled>
-      </HotelContainerStyled>
-    </>
+  return (
+    <HotelContainerStyled selected={props.selected}>
+      <ImageContainerStyled>
+        <img src={props.image} alt="Imagem do hotel." width={'168px'} height={'109px'}></img>
+      </ImageContainerStyled>
+
+      <DescriptionContainerStyled>
+        <h1>{props.name}</h1>
+        <InformationContainerStyled>
+          <h1>Quarto reservado</h1>
+          <h2>{`${props.roomName} (${acomodationType})`}</h2>
+        </InformationContainerStyled>
+        <InformationContainerStyled>
+          <h1>Pessoas no seu quarto</h1>
+          <h2>{props.ocupation > 1 ? `Você e mais ${props.ocupation} pessoa(s)` : 'Somente você'}</h2>
+        </InformationContainerStyled>
+      </DescriptionContainerStyled>
+    </HotelContainerStyled>
   );
 }
 
@@ -70,6 +63,7 @@ const HotelContainerStyled = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  margin-bottom: 25px;
   :hover {
     cursor: pointer;
   }
