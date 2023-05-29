@@ -16,11 +16,13 @@ export default function Activities() {
   const [selectedDay, setSelectedDay] = useState();
   const [ticket, setTicket] = useState(null);
   const [activities, setActivities] = useState([]);
+  const [activitiesChoosed, setActivitiesChoosed] = useState({});
 
   useEffect(() => {
     async function fetchDays() {
       try {
         const dates = await getDates(token);
+        console.log(dates);
         setDays(dates);
       } catch (err) {
         console.error('Failed to fetch activity dates:', err);
@@ -64,7 +66,9 @@ export default function Activities() {
       <Title>Escolha de atividades</Title>
       {ticket && ticket.TicketType.isRemote ? (
         <>
-          <CenterText>Sua modalidade de ingresso não necessita escolher atividade. Você terá acesso a todas as atividades.</CenterText>
+          <CenterText>
+            Sua modalidade de ingresso não necessita escolher atividade. Você terá acesso a todas as atividades.
+          </CenterText>
         </>
       ) : ticket?.status !== 'PAID' ? (
         <>
@@ -80,7 +84,7 @@ export default function Activities() {
           </DaysContainerStyled>
           <LocalsContainer>
             {activities.map((a) => (
-              <Locals name={a.locale} activities={a.activities}/>
+              <Locals selectedDay={selectedDay} setSelectedDay={setSelectedDay} name={a.locale} activities={a.activities} activitiesChoosed={activitiesChoosed} setActivitiesChoosed={setActivitiesChoosed} />
             ))}
           </LocalsContainer>
         </>

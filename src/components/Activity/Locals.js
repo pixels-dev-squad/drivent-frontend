@@ -1,13 +1,24 @@
 import styled from 'styled-components';
 import ActivityCard from './ActivityCard';
 
-export default function Locals({ name, activities }) {
+export default function Locals({ name, activities, activitiesChoosed, setActivitiesChoosed, selectedDay }) {
+  console.log(activities[0].startsAt);
+  console.log(selectedDay.split(', ')[1]);
   return (
     <LocalsStyled>
       <p>{name}</p>
       <ActivitiesContainer>
         {activities.map((a) => (
-          <ActivityCard name={a.name} capacity={a.capacity} start={a.startsAt} end={a.endsAt} key={a.id}/>
+          <ActivityCard
+            day={selectedDay}
+            activitiesChoosed={activitiesChoosed}
+            setActivitiesChoosed={setActivitiesChoosed}
+            name={a.name}
+            capacity={a.capacity}
+            start={a.startsAt}
+            end={a.endsAt}
+            key={a.id}
+          />
         ))}
       </ActivitiesContainer>
     </LocalsStyled>
@@ -36,7 +47,7 @@ const ActivitiesContainer = styled.div`
   text-align: start;
   overflow-y: auto;
   gap: 10px;
-  &::-webkit-scrollbar{
+  &::-webkit-scrollbar {
     display: none;
   }
 `;

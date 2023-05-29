@@ -1,10 +1,41 @@
 import styled from 'styled-components';
-import { HiArrowLeftOnRectangle } from 'react-icons/hi2';
-import { HiXCircle } from 'react-icons/hi';
+// import { HiArrowLeftOnRectangle } from 'react-icons/hi2';
+// import { HiXCircle } from 'react-icons/hi';
+import { useState } from 'react';
 
-export default function ActivityCard({ name, capacity, start, end }) {
+export default function ActivityCard({ name, capacity, start, end, activitiesChoosed, setActivitiesChoosed, day }) {
+  const [choosed, setChoosed] = useState(false);
+  console.log(activitiesChoosed);
+
+  const addActivity = (day, name, start, end) => {
+    setActivitiesChoosed((prevState) => {
+      const updatedActivities = { ...prevState };
+  
+      if (updatedActivities[day]) {
+        const index = updatedActivities[day].findIndex((activity) => activity.name === name);
+        if (index !== -1) {
+          updatedActivities[day].splice(index, 1);
+        } else {
+          updatedActivities[day].push({ name, start, end });
+        }
+      } else {
+        updatedActivities[day] = [{ name, start, end }];
+      }
+
+      return updatedActivities;
+    });
+  };
   return (
-    <Activity capacity={capacity} start={start.slice(0, -6)} end={end.slice(0, -6)}>
+    <Activity
+      choosed={choosed}
+      capacity={capacity}
+      start={start.slice(0, -6)}
+      end={end.slice(0, -6)}
+      onClick={() => {
+        setChoosed(!choosed);
+        addActivity(day, name, start, end);
+      }}
+    >
       <div>
         <p>{name}</p>
         <span>
@@ -14,12 +45,12 @@ export default function ActivityCard({ name, capacity, start, end }) {
       <div>
         {capacity <= 0 ? (
           <>
-            <HiXCircle />
+            {/* <HiXCircle /> */}
             <p>Esgotado</p>
           </>
         ) : (
           <>
-            <HiArrowLeftOnRectangle />
+            {/* <HiArrowLeftOnRectangle /> */}
             <p>{capacity} vagas</p>
           </>
         )}
@@ -36,10 +67,13 @@ const Activity = styled.div`
   height: ${(props) => {
     return (props.end - props.start) * 80;
   }}px;
-  background-color: #f1f1f1;
+  background-color: ${(props) => (props.choosed === false ? '#f1f1f1' : '#D0FFDB')};
   border-radius: 5px;
   padding: 12px 0px 10px 10px;
   gap: 18px;
+  &:hover {
+    cursor: pointer;
+  }
   div:first-child {
     p {
       font-size: 11px;
