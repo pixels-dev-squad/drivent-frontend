@@ -2,15 +2,43 @@ import styled from 'styled-components';
 // import { HiArrowLeftOnRectangle } from 'react-icons/hi2';
 // import { HiXCircle } from 'react-icons/hi';
 import { useState } from 'react';
+import { toast } from 'react-toastify';
 
 export default function ActivityCard({ name, capacity, start, end, activitiesChoosed, setActivitiesChoosed, day }) {
   const [choosed, setChoosed] = useState(false);
   console.log(activitiesChoosed);
 
+  const checkTimeConflict = (day, start, end) => {
+    const activities = activitiesChoosed[day];
+
+    if (activities) {
+      return activities.some((activity) => {
+        const activityStart = activity.start;
+        const activityEnd = activity.end;
+
+        return (
+          (start >= activityStart && start < activityEnd) || 
+          (end > activityStart && end <= activityEnd) || 
+          (start <= activityStart && end >= activityEnd) 
+        );
+      });
+    }
+
+    return false; 
+  };
+
   const addActivity = (day, name, start, end) => {
+    const isTimeConflict = checkTimeConflict(day, start, end);
+
+    if (isTimeConflict) {
+      toast('Conflito de horário!');
+      setChoosed(false);
+      return;
+    }
+
     setActivitiesChoosed((prevState) => {
       const updatedActivities = { ...prevState };
-  
+
       if (updatedActivities[day]) {
         const index = updatedActivities[day].findIndex((activity) => activity.name === name);
         if (index !== -1) {
@@ -25,6 +53,7 @@ export default function ActivityCard({ name, capacity, start, end, activitiesCho
       return updatedActivities;
     });
   };
+
   return (
     <Activity
       choosed={choosed}
@@ -45,12 +74,10 @@ export default function ActivityCard({ name, capacity, start, end, activitiesCho
       <div>
         {capacity <= 0 ? (
           <>
-            {/* <HiXCircle /> */}
             <p>Esgotado</p>
           </>
         ) : (
           <>
-            {/* <HiArrowLeftOnRectangle /> */}
             <p>{capacity} vagas</p>
           </>
         )}
@@ -58,7 +85,6 @@ export default function ActivityCard({ name, capacity, start, end, activitiesCho
     </Activity>
   );
 }
-
 const Activity = styled.div`
   display: flex;
   justify-content: space-between;

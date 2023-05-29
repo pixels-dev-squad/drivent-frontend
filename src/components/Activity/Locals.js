@@ -2,8 +2,6 @@ import styled from 'styled-components';
 import ActivityCard from './ActivityCard';
 
 export default function Locals({ name, activities, activitiesChoosed, setActivitiesChoosed, selectedDay }) {
-  console.log(activities[0].startsAt);
-  console.log(selectedDay.split(', ')[1]);
   return (
     <LocalsStyled>
       <p>{name}</p>
